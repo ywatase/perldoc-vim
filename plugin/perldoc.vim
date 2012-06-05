@@ -64,6 +64,18 @@ function! s:PerldocWord(word)
     let s:last_word = a:word
     call s:ShowCmd('0read!perldoc -otext -f ' . a:word)
     setfiletype man
+  elseif s:CartonExist()
+    if s:ClassExistCarton(a:word)
+      let s:mode = ''
+      let s:last_word = a:word
+      call s:ShowCmd('0read!carton exec -- perldoc -otext -T ' . a:word)
+      setfiletype man
+    elseif s:FuncExistCarton(a:word)
+      let s:mode = ''
+      let s:last_word = a:word
+      call s:ShowCmd('0read!carton exec -- perldoc -otext -f ' . a:word)
+      setfiletype man
+    end
   else
     echo 'No documentation found for "' . a:word . '".'
   end
@@ -73,6 +85,10 @@ function! s:PerldocSource(word)
   if s:ClassExist(a:word)
     let s:mode = 'source'
     call s:ShowCmd('0read!perldoc -m ' . a:word)
+    setfiletype perl
+  elseif s:CartonExist() && s:ClassExistCarton(a:word)
+    let s:mode = 'source'
+    call s:ShowCmd('0read!carton exec -- perldoc -m ' . a:word)
     setfiletype perl
   end
 endfunction
@@ -105,6 +121,33 @@ endfunction
 
 function! s:FuncExist(word)
   silent call system('perldoc -otext -f ' . a:word)
+  if v:shell_error
+    return 0
+  else
+    return 1
+  endif
+endfunction
+
+function! s:CartonExist()
+  silent call system('carton help')
+  if v:shell_error
+    return 0
+  else
+    return 1
+  endif
+endfunction
+
+function! s:ClassExistCarton(word)
+  silent call system('carton exec -- perldoc -otext -T ' . a:word)
+  if v:shell_error
+    return 0
+  else
+    return 1
+  endif
+endfunction
+
+function! s:FuncExistCarton(word)
+  silent call system('carton exec -- perldoc -otext -f ' . a:word)
   if v:shell_error
     return 0
   else
