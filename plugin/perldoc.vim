@@ -163,6 +163,14 @@ function! s:Perldoc(...)
   call s:PerldocWord(word)
 endfunction
 
+function! s:Perlsource(...)
+  let word = join(a:000, ' ')
+  if !strlen(word)
+    let word = expand('<cword>')
+  endif
+  call s:PerldocSource(word)
+endfunction
+
 let s:perlpath = ''
 function! s:PerldocComplete(ArgLead, CmdLine, CursorPos)
   if len(s:perlpath) == 0
@@ -192,3 +200,4 @@ function! s:PerldocComplete(ArgLead, CmdLine, CursorPos)
 endfunction
 
 command! -nargs=* -complete=customlist,s:PerldocComplete Perldoc :call s:Perldoc(<q-args>)
+command! -nargs=* -complete=customlist,s:PerldocComplete Perlsource :call s:Perlsource(<q-args>)
