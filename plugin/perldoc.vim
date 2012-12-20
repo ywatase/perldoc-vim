@@ -13,6 +13,7 @@ let g:loaded_perldoc = 1
 let s:buf_nr = -1
 let s:mode = ''
 let s:last_word = ''
+let s:perlenv  = 'env PERL5LIB="' . $PERL5LIB . '" '
 
 function! s:PerldocView()
   " base on FuzzyFinder WindowManager
@@ -57,23 +58,23 @@ function! s:PerldocWord(word)
   if s:ClassExist(a:word)
     let s:mode = ''
     let s:last_word = a:word
-    call s:ShowCmd('0read!perldoc -otext -T ' . a:word)
+    call s:ShowCmd('0read!' . s:perlenv . 'perldoc -otext -T ' . a:word)
     setfiletype man
   elseif s:FuncExist(a:word)
     let s:mode = ''
     let s:last_word = a:word
-    call s:ShowCmd('0read!perldoc -otext -f ' . a:word)
+    call s:ShowCmd('0read!' . s:perlenv . 'perldoc -otext -f ' . a:word)
     setfiletype man
   elseif s:CartonExist()
     if s:ClassExistCarton(a:word)
       let s:mode = ''
       let s:last_word = a:word
-      call s:ShowCmd('0read!carton exec -- perldoc -otext -T ' . a:word)
+      call s:ShowCmd('0read!' . s:perlenv . 'carton exec -- perldoc -otext -T ' . a:word)
       setfiletype man
     elseif s:FuncExistCarton(a:word)
       let s:mode = ''
       let s:last_word = a:word
-      call s:ShowCmd('0read!carton exec -- perldoc -otext -f ' . a:word)
+      call s:ShowCmd('0read!' . s:perlenv . 'carton exec -- perldoc -otext -f ' . a:word)
       setfiletype man
     end
   else
@@ -84,11 +85,11 @@ endfunction
 function! s:PerldocSource(word)
   if s:ClassExist(a:word)
     let s:mode = 'source'
-    call s:ShowCmd('0read!perldoc -m ' . a:word)
+    call s:ShowCmd('0read!' . s:perlenv . 'perldoc -m ' . a:word)
     setfiletype perl
   elseif s:CartonExist() && s:ClassExistCarton(a:word)
     let s:mode = 'source'
-    call s:ShowCmd('0read!carton exec -- perldoc -m ' . a:word)
+    call s:ShowCmd('0read!' . s:perlenv . 'carton exec -- perldoc -m ' . a:word)
     setfiletype perl
   end
 endfunction
@@ -111,7 +112,7 @@ function! s:ShowCmd(cmd)
 endfunction
 
 function! s:ClassExist(word)
-  silent call system('perldoc -otext -T ' . a:word)
+  silent call system(s:perlenv . 'perldoc -otext -T ' . a:word)
   if v:shell_error
     return 0
   else
@@ -120,7 +121,7 @@ function! s:ClassExist(word)
 endfunction
 
 function! s:FuncExist(word)
-  silent call system('perldoc -otext -f ' . a:word)
+  silent call system(s:perlenv . 'perldoc -otext -f ' . a:word)
   if v:shell_error
     return 0
   else
@@ -138,7 +139,7 @@ function! s:CartonExist()
 endfunction
 
 function! s:ClassExistCarton(word)
-  silent call system('carton exec -- perldoc -otext -T ' . a:word)
+  silent call system(s:perlenv . 'carton exec -- perldoc -otext -T ' . a:word)
   if v:shell_error
     return 0
   else
@@ -147,7 +148,7 @@ function! s:ClassExistCarton(word)
 endfunction
 
 function! s:FuncExistCarton(word)
-  silent call system('carton exec -- perldoc -otext -f ' . a:word)
+  silent call system(s:perlenv . 'carton exec -- perldoc -otext -f ' . a:word)
   if v:shell_error
     return 0
   else
@@ -176,9 +177,9 @@ function! s:PerldocComplete(ArgLead, CmdLine, CursorPos)
   if len(s:perlpath) == 0
     try
       if &shellxquote != '"'
-        let s:perlpath = system('perl -e "print join(q/,/,@INC)"')
+        let s:perlpath = system(s:perlenv . 'perl -e "print join(q/,/,@INC)"')
       else
-        let s:perlpath = system("perl -e 'print join(q/,/,@INC)'")
+        let s:perlpath = system(s:perlenv . "perl -e 'print join(q/,/,@INC)'")
       endif
     catch /E145:/
       let s:perlpath = ".,,"
